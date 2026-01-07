@@ -1,6 +1,6 @@
 // include the required packages
 const express = require('express');
-const mysql = require('mysql2');
+const mysql = require('mysql2/promise');
 require('dotenv').config();
 const port = 3000;
 
@@ -39,13 +39,21 @@ app.get('/allcards', async(req, res) => {
 });
 
 // Example Route: Create a new card
-app.post('/cards', async(req, res) => {
+app.post('/addcard', async (req, res) => {
     const { card_name, card_pic } = req.body;
     try {
         let connection = await mysql.createConnection(dbConfig);
-        await connection.execute('INSERT INTO cards (card_name, card_pic) VALUES (?, ?)', [card_name, card_pic])
+        await connection.execute(
+            'INSERT INTO cards (card_name, card_pic) VALUES (?, ?)',
+            [card_name, card_pic]
+        );
+        res.status(201).json({
+            message: 'Card ' + card_name + ' added successfully'
+        });
     } catch (err) {
-        console.log(err);
-        res.status(500).json({message:'Server error - could not add card' + card_name});
+        console.error(err);
+        res.status(500).json({
+            message: 'Server error - could not add card ' + card_name
+        });
     }
 });
